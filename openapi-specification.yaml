@@ -1,0 +1,265 @@
+openapi: 3.0.3
+info:
+  title: Especificação da POC do Sistema de Gestão
+  description: 'Esta é a especificação para as APIs de dados georreferenciados e de serviços ao cidadão'
+  contact:
+    name: "SGM POC"
+    url: https://github.com/sgm-poc
+  version: 1.0.0
+servers:
+- url: https://github.com/sgm-poc
+tags:
+- name: POC SGM
+  description: Serviços implementados
+
+####################################
+# PATHS
+####################################
+
+paths:
+
+  ####################################
+  # Dados Georreferenciados
+  ####################################
+
+  /regions/{region_code}/taxes:
+    get:
+      tags:
+      - Impostos arrecadados
+      summary: Busca a somatória de impostos da região
+      parameters:
+      - $ref: '#/components/parameters/regionCodePathParam'
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegionTaxes'
+        400:
+          $ref: '#/components/responses/IllegalInput'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /regions/{region_code}:
+    get:
+      tags:
+      - Região
+      summary: Busca por uma região e seus dados
+      parameters:
+      - $ref: '#/components/parameters/regionCodePathParam'
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Region'
+        400:
+          $ref: '#/components/responses/IllegalInput'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  ####################################
+  # Dados do Cidadão
+  ####################################
+  
+  /entities/{document}/type/{type_code}/properties/taxes:
+    get:
+      tags:
+      - Cálculo de impostos
+      summary: Busca as propriedades e seus impostos vinculados ao documento
+      parameters:
+      - $ref: '#/components/parameters/entityDocumentPathParam'
+      - $ref: '#/components/parameters/entityTypeCodePathParam'
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertiesTaxes'
+        400:
+          $ref: '#/components/responses/IllegalInput'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+####################################
+# COMPONENTS
+####################################
+
+components:
+
+  parameters:
+
+    ####################################
+    # Dados Georreferenciados
+    ####################################
+
+    regionCodePathParam:
+      name: region_code
+      in: path
+      description: Código de 4 caractéres alfanuméricos.
+      required: true
+      schema:
+        type: string
+        format: string
+        example: A1B2
+
+    ####################################
+    # Dados do Cidadão
+    ####################################
+    
+    entityDocumentPathParam:
+      name: document
+      in: path
+      description: Documento da pessoa física ou jurídica (CPF ou CNPJ).
+      required: true
+      schema:
+        type: string
+        format: string
+        example: 11122233344
+
+    entityTypeCodePathParam:
+      name: type_code
+      in: path
+      description: Código da pessoa. Física, jurídica ou rural.
+      required: true
+      schema:
+        type: string
+        format: string
+        example: F
+    
+  ####################################
+  # Responses
+  ####################################
+
+  responses:
+    Ok:
+      description: Ok
+    SuccessNoContent:
+      description: Sucesso
+    Created:
+      description: Criado com sucesso
+    NotFound:
+      description: Entidade não encontrada
+    IllegalInput:
+      description: Parâmetros informados são inválidos
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/IllegalInputError'
+    Conflict:
+      description: Requisição em duplicidade
+    GeneralError:
+      description: General Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GeneralError'
+
+  schemas:
+
+    ####################################
+    # Dados Georreferenciados
+    ####################################
+
+    RegionTaxes:
+      type: object
+      description: Resposta contendo a região e seus impostos arrecadados.
+      properties:
+        region_code:
+            $ref: '#/components/schemas/Region'
+        taxes:
+          type: array
+          items:
+            $ref: '#/components/schemas/TotalTax'
+      
+    Region:
+      type: object
+      description: Dados da região.
+      properties:
+        code:
+          type: string
+          example: A1B2
+          description: Código de 4 caractéres alfanuméricos        
+        name:
+          type: string
+          example: Centro
+          description: Nome da região/bairro
+        habitants:
+          type: integer
+          example: 10000
+          description: Número total de habitantes da região
+          
+    TotalTax:
+      type: object
+      description: Imposto total.
+      properties:
+        region_code:
+          type: integer
+          example: 1000
+          description: Valor total do imposto. 10 reais = 1000
+        type:
+          $ref: '#/components/schemas/TaxType'
+
+    TaxType:
+      type: string
+      description: Tipo do imposto
+      enum: [IPTU, ITR]
+
+    ####################################
+    # Dados do Cidadão
+    ####################################
+    
+    PropertiesTaxes:
+      type: object
+      description: Propriedades e seus impostos.
+      properties:
+        properties: 
+          type: array
+          items:
+            $ref: '#/components/schemas/Property'
+            
+    Property:
+      type: object
+      description: Dados sobre a propriedade.
+      properties:
+        type:
+          $ref: '#/components/schemas/PropertyType'
+        taxes:
+          type: array
+          items:
+            $ref: '#/components/schemas/PropertyTax'
+            
+    PropertyTax:
+      type: object
+      description: Imposto da propriedade.
+      properties:
+        region_code:
+          type: integer
+          example: 1000
+          description: Valor total do imposto. 10 reais = 1000
+        type:
+          $ref: '#/components/schemas/TaxType'
+          
+    PropertyType:
+      type: string
+      description: Tipo da propriedade
+      enum: [URBANA, RURAL]
+
+    ####################################
+    # Others
+    ####################################
+
+    IllegalInputError:
+      type: object
+      properties:
+        code: 
+          type: string    
+          
+    GeneralError:
+      type: object
+      properties:
+        code: 
+          type: string
