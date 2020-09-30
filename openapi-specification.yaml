@@ -168,7 +168,7 @@ components:
       type: object
       description: Resposta contendo a região e seus impostos arrecadados.
       properties:
-        region_code:
+        region:
             $ref: '#/components/schemas/Region'
         taxes:
           type: array
