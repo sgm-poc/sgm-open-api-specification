@@ -196,7 +196,7 @@ components:
       type: object
       description: Imposto total.
       properties:
-        region_code:
+        amount:
           type: integer
           example: 1000
           description: Valor total do imposto. 10 reais = 1000
@@ -236,7 +236,7 @@ components:
       type: object
       description: Imposto da propriedade.
       properties:
-        region_code:
+        amount:
           type: integer
           example: 1000
           description: Valor total do imposto. 10 reais = 1000
