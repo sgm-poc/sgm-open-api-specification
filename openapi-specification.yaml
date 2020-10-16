@@ -22,6 +22,23 @@ paths:
   # Dados Georreferenciados
   ####################################
 
+  /regions:
+    get:
+      tags:
+      - Regiões
+      summary: Busca a lista das regiões cadastradas
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegionList'
+        400:
+          $ref: '#/components/responses/IllegalInput'
+        404:
+          $ref: '#/components/responses/NotFound'
+
   /regions/{region_code}/taxes:
     get:
       tags:
@@ -55,6 +72,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Region'
+        400:
+          $ref: '#/components/responses/IllegalInput'
+        404:
+          $ref: '#/components/responses/NotFound'
+          
+  /county/data:
+    get:
+      tags:
+      - Município
+      summary: Busca os dados gerais do município
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/County'
         400:
           $ref: '#/components/responses/IllegalInput'
         404:
@@ -174,7 +208,16 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TotalTax'
-      
+    
+    RegionList:
+      type: object
+      description: Resposta contendo a lista de regiões cadastradas
+      properties:
+        regionList:
+          type: array
+          items:
+            $ref: '#/components/schemas/Region'
+            
     Region:
       type: object
       description: Dados da região.
@@ -187,10 +230,10 @@ components:
           type: string
           example: Centro
           description: Nome da região/bairro
-        habitants:
+        population:
           type: integer
           example: 10000
-          description: Número total de habitantes da região
+          description: Número total da população da região
           
     TotalTax:
       type: object
@@ -207,6 +250,27 @@ components:
       type: string
       description: Tipo do imposto
       enum: [IPTU, ITR]
+      
+    County:
+      type: object
+      description: Dados gerais do município.
+      properties:
+        name:
+          type: string
+          example: Bom Destino
+          description: nome do município        
+        totalRegions:
+          type: integer
+          example: 10
+          description: Quantidade de regiões cadastradas no município        
+        totalTaxes:
+          type: integer
+          example: 100000
+          description: Montante total de impostos arrecadados
+        population:
+          type: integer
+          example: 10000
+          description: Número total da população do município
 
     ####################################
     # Dados do Cidadão
